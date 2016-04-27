@@ -2,6 +2,7 @@ package edu.uw.filedemo;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -11,6 +12,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +41,25 @@ public class MainActivity extends AppCompatActivity {
 
         if(externalButton.isChecked()){ //external storage
 
+            if (isExternalStorageWritable()) {
+                                                                        // Which directory we want to access
+                //File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS); // Phone's file hierarchy
+
+                File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS); // Documents in the file hierarchy for this app
+                File file = new File(dir, "notes.txt");
+                Log.v(TAG, file.getAbsolutePath());
+
+                // Write what the user typed in in textEntry to the file
+                try {
+                    PrintWriter writer = new PrintWriter(new FileWriter(file, true));
+                    writer.println(textEntry.getText());
+                    writer.close();
+
+                } catch (IOException ioe) {
+                    Log.d(TAG, Log.getStackTraceString(ioe));
+                }
+
+            }
         }
         else { //internal storage
 
@@ -47,6 +74,25 @@ public class MainActivity extends AppCompatActivity {
 
         if(externalButton.isChecked()){ //external storage
 
+            if (isExternalStorageWritable()) {
+                File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS); // Documents in the file hierarchy for this app
+                File file = new File(dir, "notes.txt");
+
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(file));
+                    StringBuilder text = new StringBuilder();
+
+                    String line = reader.readLine();
+                    // Appends each line one by one using the StringBuilder
+                    while (line != null) {
+                        text.append(line + "\n");
+                        line = reader.readLine();
+
+                    }
+                } catch(IOException ioe) {
+
+                }
+            }
         }
         else { //internal storage
 
@@ -63,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
         else { //internal storage
 
         }
+    }
+
+    // Checks to make sure storage is available
+    public boolean isExternalStorageWritable() {
+        String extStorageState = Environment.getExternalStorageState();
+        return (extStorageState.equals(Environment.MEDIA_MOUNTED));
     }
 
 
