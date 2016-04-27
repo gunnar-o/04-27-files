@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     public void shareFile(View v) {
         Log.v(TAG, "Sharing file...");
 
-        Uri fileUri = null
+        Uri fileUri = null;
 
 
         if(externalButton.isChecked()){ //external storage
