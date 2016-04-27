@@ -1,6 +1,7 @@
 package edu.uw.filedemo;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -62,7 +65,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else { //internal storage
+            // Internal storage - don't need permissions, don't need to check if it's writable/mounted
 
+//            File dir = getFilesDir();
+//            File file = new File(dir, "notes.txt");
+//            Log.v(TAG, file.getAbsolutePath());
+//
+//            // Write what the user typed in in textEntry to the file
+//            try {
+//                PrintWriter writer = new PrintWriter(new FileWriter(file, true));
+//                writer.println(textEntry.getText());
+//                writer.close();
+//
+//            } catch (IOException ioe) {
+//                Log.d(TAG, Log.getStackTraceString(ioe));
+//            }
+
+            try {
+                FileOutputStream fis = openFileOutput("notes.txt", MODE_PRIVATE);
+                // some other stuff (look in doc)
+            } catch (IOException ioe) {
+
+            }
         }
     }
 
@@ -94,8 +118,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        else { //internal storage
+        else { //internal storage - private to the app
+            File dir = getFilesDir(); // data/data/package.name/files    //getExternalFilesDir() is the equivalent for internal
+            File file = new File(dir, "notes.txt");
 
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                StringBuilder text = new StringBuilder();
+
+                String line = reader.readLine();
+                // Appends each line one by one using the StringBuilder
+                while (line != null) {
+                    text.append(line + "\n");
+                    line = reader.readLine();
+
+                }
+            } catch(IOException ioe) {
+
+            }
         }
     }
 
@@ -103,11 +143,31 @@ public class MainActivity extends AppCompatActivity {
     public void shareFile(View v) {
         Log.v(TAG, "Sharing file...");
 
+        Uri fileUri = null
+
+
         if(externalButton.isChecked()){ //external storage
 
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            File file = new File(dir, "notes.txt");
+            fileUri = Uri.fromFile(file); // Gets the uri of the given file
         }
         else { //internal storage
+            // Internal files can't be shared (except using FileProvider - pain in ass)
+            File dir = getFilesDir();
+            File file = new File(dir, "notes.txt");
+            fileUri = Uri.fromFile(file); // Gets the uri of the given file
+        }
+        //
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        // Send the location (uri) to the activity that accepts it
+        intent.setType("text/plain");   // We're going to send uri of a plain text file
+        intent.putExtra(Intent.EXTRA_STREAM, fileUri);
 
+                                                    // Text on chooser
+        Intent chooser = Intent.createChooser(intent, "Share File");// Intent that asks user which application to use to send other intent
+        if (intent.resolveActivity(getPackageManager()) != null) {  // Ensures some activity can handle
+            startActivity(intent);
         }
     }
 
